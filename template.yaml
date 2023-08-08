@@ -71,11 +71,3 @@ Resources:
       ClientName: !Sub '${env}-prayer-request-app'
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
-
-Outputs:
-  UserPoolId:
-    Description: "Cognito User Pool ID"
-    Value: !Ref CognitoUserPool
-  UserPoolClientId:
-    Description: "Cognito User Pool Client ID"
-    Value: !Ref CognitoUserPoolClient
