@@ -34,3 +34,48 @@ Resources:
             Principal: '*'
             Action: 's3:GetObject'
             Resource: !Join [ '', ['arn:aws:s3:::', !Ref FrontEndBucket, '/*'] ]
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub '${env}-prayer-request-app'
+      DeletionProtection: "ACTIVE"
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireNumbers: true
+      AdminCreateUserConfig:
+        UnusedAccountValidityDays: 7
+      MfaConfiguration: "OFF"
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+        - Name: preferred_username
+          Required: true
+          Mutable: true
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_LINK
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub '${env}-prayer-request-app'
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+
+Outputs:
+  UserPoolId:
+    Description: "Cognito User Pool ID"
+    Value: !Ref CognitoUserPool
+  UserPoolClientId:
+    Description: "Cognito User Pool Client ID"
+    Value: !Ref CognitoUserPoolClient
