@@ -1,0 +1,35 @@
+name: Dev Deploy
+on:
+  push:
+    branches:
+      - develop
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.13.0'
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+      - name: Configure Environment Vars
+        run: |
+          cp environments/dev-env.tsx src/env.tsx
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::679274284562:role/GitHubAction-AssumeRoleWithAction
+          role-session-name: dev-deploy-session
+          aws-region: us-east-1
+      - name: Install Sam CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - name: Sam Build
+        run: sam build --template-file "template.yaml" --use-container
+      - name: Sam Deploy
+        run: sam deploy --template-file "template.yaml" --stack-name "dev-prayer-request-app" --parameter-overrides "env=dev" --no-confirm-changeset --no-fail-on-empty-changeset
