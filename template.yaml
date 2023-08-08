@@ -11,6 +11,66 @@ Parameters:
       - prod
 
 Resources:
+
+  MainFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: !GetAtt UsersTable.Arn
+      Environment:
+        Variables:
+          USERSTABLENAME: !Ref UsersTable
+      Events:
+        Others:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        Base:
+          Type: HttpApi
+          Properties:
+            Path: / 
+            Method: ANY
+      MemorySize: 128
+      Timeout: 60
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${env}-prayer-request-app-users'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: userName
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: UserNameIndex
+          KeySchema:
+            - AttributeName: userName
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
   FrontEndBucket:
     Type: AWS::S3::Bucket
     Properties:
