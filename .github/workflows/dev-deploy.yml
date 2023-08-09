@@ -19,9 +19,6 @@ jobs:
       - name: Configure Environment Vars
         run: |
           cp environments/dev-env.tsx src/env.tsx
-      - name: NPM install
-        run: |
-          npm install
       - name: Transpile
         run: |
           npx tsc
