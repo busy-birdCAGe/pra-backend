@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - develop
+      - feature/BCS-52/backend
 permissions:
   id-token: write
   contents: read
@@ -19,6 +20,9 @@ jobs:
       - name: Configure Environment Vars
         run: |
           cp environments/dev-env.tsx src/env.tsx
+      - name: NPM install
+        run: |
+          cd src; npm install; cd ..
       - name: Transpile
         run: |
           npx tsc
