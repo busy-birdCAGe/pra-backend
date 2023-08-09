@@ -138,3 +138,5 @@ old
 keys.js
 
 test.http
+
+*.js
