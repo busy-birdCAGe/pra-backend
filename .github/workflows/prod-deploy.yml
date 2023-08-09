@@ -19,9 +19,12 @@ jobs:
       - name: Configure Environment Vars
         run: |
           cp environments/prod-env.tsx src/env.tsx
+      - name: NPM install
+        run: |
+          cd src; npm install; cd ..
       - name: Transpile
         run: |
-          npx tsc
+          cd src; npx tsc; cd ..
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
