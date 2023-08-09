@@ -24,7 +24,7 @@ jobs:
           cd src; npm install; cd ..
       - name: Transpile
         run: |
-          npx tsc
+          cd src; npx tsc; cd ..
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
