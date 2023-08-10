@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: Backend for the Prayer Request App
 
@@ -11,20 +11,19 @@ Parameters:
       - prod
 
 Resources:
-
-  MainFunction:
+  AuthService:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src
+      CodeUri: src/services/auth
       Handler: app.handler
       Runtime: nodejs16.x
       Policies:
         - Version: "2012-10-17"
           Statement:
-          - Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: !GetAtt UsersTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: !GetAtt UsersTable.Arn
       Environment:
         Variables:
           USERSTABLENAME: !Ref UsersTable
@@ -37,7 +36,7 @@ Resources:
         Base:
           Type: HttpApi
           Properties:
-            Path: / 
+            Path: /
             Method: ANY
       MemorySize: 128
       Timeout: 60
@@ -45,7 +44,7 @@ Resources:
   UsersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub '${env}-prayer-request-app-users'
+      TableName: !Sub "${env}-prayer-request-app-users"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: userId
@@ -74,7 +73,7 @@ Resources:
   FrontEndBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${env}-prayer-request-app'
+      BucketName: !Sub "${env}-prayer-request-app"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -88,17 +87,17 @@ Resources:
     Properties:
       Bucket: !Ref FrontEndBucket
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource: !Join [ '', ['arn:aws:s3:::', !Ref FrontEndBucket, '/*'] ]
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Join ["", ["arn:aws:s3:::", !Ref FrontEndBucket, "/*"]]
 
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: !Sub '${env}-prayer-request-app'
+      UserPoolName: !Sub "${env}-prayer-request-app"
       DeletionProtection: "ACTIVE"
       UsernameAttributes:
         - email
@@ -119,21 +118,18 @@ Resources:
         - Name: email
           Required: true
           Mutable: true
-        - Name: preferred_username
-          Required: true
-          Mutable: true
       VerificationMessageTemplate:
         DefaultEmailOption: CONFIRM_WITH_LINK
 
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: !Sub '${env}-prayer-request-app'
+      ClientName: !Sub "${env}-prayer-request-app"
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
 
   CognitoUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
-      Domain: !Sub '${env}-prayer-request-app-domain'
+      Domain: !Sub "${env}-prayer-request-app-domain"
       UserPoolId: !Ref CognitoUserPool
