@@ -131,3 +131,9 @@ Resources:
       ClientName: !Sub '${env}-prayer-request-app'
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
+
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub '${env}-prayer-request-app-domain'
+      UserPoolId: !Ref CognitoUserPool
