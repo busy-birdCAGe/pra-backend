@@ -11,6 +11,7 @@ Parameters:
       - prod
 
 Resources:
+
   AuthService:
     Type: AWS::Serverless::Function
     Properties:
@@ -47,14 +48,14 @@ Resources:
       TableName: !Sub "${env}-prayer-request-app-users"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: userId
-          AttributeType: S
         - AttributeName: userName
           AttributeType: S
         - AttributeName: email
           AttributeType: S
+        - AttributeName: sub
+          AttributeType: S
       KeySchema:
-        - AttributeName: userId
+        - AttributeName: email
           KeyType: HASH
       GlobalSecondaryIndexes:
         - IndexName: UserNameIndex
@@ -63,9 +64,9 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
-        - IndexName: EmailIndex
+        - IndexName: SubIndex
           KeySchema:
-            - AttributeName: email
+            - AttributeName: sub
               KeyType: HASH
           Projection:
             ProjectionType: ALL
