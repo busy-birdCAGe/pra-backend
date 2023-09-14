@@ -5,6 +5,7 @@ import {
   request_collection_name,
   users_collection_name,
   churches_collection_name,
+  prayee_collection_name,
 } from "./constants";
 import { generateRequestId } from "./utils";
 import { mongo_url_ssm } from "./env";
@@ -21,9 +22,7 @@ type RequestDocument = {
 export type RequestView = {
   _id: number;
   text: string;
-  userName?: string;
-  anonymous: boolean;
-  personal: boolean;
+  userName: string | null;
 };
 
 type UserDocument = {
@@ -37,6 +36,12 @@ type ChurchDocument = {
   name: string;
 };
 
+type PrayeeDocument = {
+  _id: ObjectId;
+  userSub: string;
+  requestId: number;
+};
+
 class Database {
   private mongo_url!: string;
   private client!: MongoClient;
@@ -44,6 +49,7 @@ class Database {
   private requests_collection!: Collection<RequestDocument>;
   private churches_collection!: Collection<ChurchDocument>;
   private users_collection!: Collection<UserDocument>;
+  private prayee_collection!: Collection<PrayeeDocument>;
 
   private async connect(): Promise<void> {
     if (!this.mongo_url) {
@@ -58,6 +64,9 @@ class Database {
       );
       this.users_collection = this.db.collection<UserDocument>(
         users_collection_name
+      );
+      this.prayee_collection = this.db.collection<PrayeeDocument>(
+        prayee_collection_name
       );
     }
   }
@@ -79,20 +88,22 @@ class Database {
     };
     await this.connect();
     await this.requests_collection.insertOne(request);
+    await this.createPrayee(userSub, request._id);
     return request;
   }
 
-  public async getRequestsByChurches(
+  public async getPublicRequestsByChurches(
     churchIds: ObjectId[],
     limit: number,
     offset: number
   ): Promise<RequestView[]> {
     await this.connect();
-    return await this.requests_collection
+    return (await this.requests_collection
       .aggregate([
         {
           $match: {
             churchIds: { $in: churchIds },
+            personal: false,
           },
         },
         {
@@ -119,22 +130,31 @@ class Database {
           $project: {
             _id: 1,
             text: 1,
-            anonymous: 1,
-            personal: 1,
-            userName: "$user.userName",
+            userName: {
+              $cond: {
+                if: { $eq: ["$anonymous", false] },
+                then: "$user.userName",
+                else: null,
+              },
+            },
           },
         },
       ])
-      .toArray() as RequestView[];
+      .toArray()) as RequestView[];
   }
 
-  public async getAllRequests(
+  public async getAllPublicRequests(
     limit: number,
     offset: number
   ): Promise<RequestView[]> {
     await this.connect();
-    return await this.requests_collection
+    return (await this.requests_collection
       .aggregate([
+        {
+          $match: {
+            personal: false,
+          },
+        },
         {
           $lookup: {
             from: users_collection_name,
@@ -159,13 +179,17 @@ class Database {
           $project: {
             _id: 1,
             text: 1,
-            anonymous: 1,
-            personal: 1,
-            userName: "$user.userName",
+            userName: {
+              $cond: {
+                if: { $eq: ["$anonymous", false] },
+                then: "$user.userName",
+                else: null,
+              },
+            },
           },
         },
       ])
-      .toArray() as RequestView[];
+      .toArray()) as RequestView[];
   }
 
   public async createUser(
@@ -213,6 +237,84 @@ class Database {
   ): Promise<ChurchDocument | null> {
     await this.connect();
     return this.churches_collection.findOne({ _id: churchId });
+  }
+
+  public async createPrayee(
+    userSub: string,
+    requestId: number
+  ): Promise<PrayeeDocument> {
+    await this.connect();
+    const prayee: PrayeeDocument = {
+      _id: new ObjectId(),
+      userSub,
+      requestId,
+    };
+    await this.prayee_collection.insertOne(prayee);
+    return prayee;
+  }
+
+  public async deletePrayee(userSub: string, requestId: number): Promise<void> {
+    await this.connect();
+    await this.prayee_collection.deleteOne({ userSub, requestId });
+  }
+
+  public async getPrayerList(userSub: string, limit: number, offset: number): Promise<Array<RequestView>> {
+    await this.connect();
+    return (await this.prayee_collection
+      .aggregate([
+        {
+          $match: {
+            userSub,
+          },
+        },
+        {
+          $sort: {
+            requestId: -1,
+          },
+        },
+        {
+          $skip: offset,
+        },
+        {
+          $limit: limit,
+        },
+        {
+          $lookup: {
+            from: request_collection_name,
+            localField: "requestId",
+            foreignField: "_id",
+            as: "request",
+          },
+        },
+        {
+          $unwind: "$request",
+        },
+        {
+          $lookup: {
+            from: users_collection_name,
+            localField: "request.userSub",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $unwind: "$user",
+        },
+        {
+          $project: {
+            _id: "$request._id",
+            text: "$request.text",
+            userName: {
+              $cond: {
+                if: { $eq: ["$request.anonymous", false] },
+                then: "$user.userName",
+                else: null,
+              },
+            },
+          },
+        },
+      ])
+      .toArray()) as RequestView[];
   }
 }
 

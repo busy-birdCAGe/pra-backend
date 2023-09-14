@@ -25,19 +25,17 @@ export async function createRequest(
   }
 }
 
-export async function getRequestsByChurch(
+export async function getPublicRequestsByChurch(
   churchIds: Array<string>,
   limit: number,
   offset: number
 ): Promise<Array<RequestView>> {
   try {
     let churchObjectIds = churchIds.map((id) => new ObjectId(id));
-    let requestViews = await Database.getRequestsByChurches(churchObjectIds, limit, offset);
-    return requestViews.map(
-      ({ _id, text, anonymous, personal, userName }) =>
-        anonymous
-          ? { _id, text, anonymous, personal }
-          : { _id, text, anonymous, personal, userName }
+    return await Database.getPublicRequestsByChurches(
+      churchObjectIds,
+      limit,
+      offset
     );
   } catch (error: any) {
     console.error(error);
@@ -45,18 +43,12 @@ export async function getRequestsByChurch(
   }
 }
 
-export async function getAllRequests(
+export async function getAllPublicRequests(
   limit: number,
   offset: number
 ): Promise<Array<RequestView>> {
   try {
-    let requestViews = await Database.getAllRequests(limit, offset);
-    return requestViews.map(
-      ({ _id, text, anonymous, personal, userName }) =>
-        anonymous
-          ? { _id, text, anonymous, personal }
-          : { _id, text, anonymous, personal, userName }
-    );
+    return await Database.getAllPublicRequests(limit, offset);
   } catch (error: any) {
     console.error(error);
     throw new Error(errorMessages.requests.get);

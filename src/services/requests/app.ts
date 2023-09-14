@@ -1,7 +1,11 @@
 import express, { Request, Response } from "express";
 import serverlessHttp from "serverless-http";
 import cors from "cors";
-import { createRequest, getAllRequests, getRequestsByChurch } from "./lib";
+import {
+  createRequest,
+  getAllPublicRequests,
+  getPublicRequestsByChurch,
+} from "./lib";
 import { RequestView } from "../../database";
 import { decodeJwtToken } from "../../utils";
 
@@ -42,9 +46,9 @@ app.get("/requests", async (req: Request, res: Response) => {
     let offset = req.query.offset ? parseInt(req.query.offset.toString()) : 0;
     if (req.query.churches) {
       let churches = req.query.churches!.toString().split(",");
-      result = await getRequestsByChurch(churches, limit, offset);
+      result = await getPublicRequestsByChurch(churches, limit, offset);
     } else {
-      result = await getAllRequests(limit, offset);
+      result = await getAllPublicRequests(limit, offset);
     }
     res.json(result);
   } catch (error: any) {
