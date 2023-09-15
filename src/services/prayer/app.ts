@@ -41,10 +41,21 @@ app.delete("/prayee", async (req: Request, res: Response) => {
   }
 });
 
-//Prayer list
+app.get("/prayerlist", async (req: Request, res: Response) => {
+  try {
+    let userSub = decodeJwtToken(req.headers.authorization!);
+    let result: Array<RequestView>;
+    let limit = req.query.limit ? parseInt(req.query.limit.toString()) : 10;
+    let offset = req.query.offset ? parseInt(req.query.offset.toString()) : 0;
+    result = await getPrayerList(userSub, limit, offset);
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).send(error.message);
+  }
+});
 
 const handler = serverlessHttp(app);
 
 export { handler };
 
-export { app as requestsApp };
+export { app as prayerApp };

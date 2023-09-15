@@ -25,6 +25,9 @@ export const errorMessages = {
     create: "An error occured when adding request to your list",
     delete: "An error occured when removing request to your list",
   },
+  users: {
+    get: "An error occured when getting user info",
+  },
   ssm: {
     noResponse: "SSM response is missing required data",
   },

@@ -29,6 +29,14 @@ type UserDocument = {
   _id: string;
   userName: string;
   email: string;
+  churches: Array<ObjectId>;
+};
+
+export type UserView = {
+  _id: string;
+  userName: string;
+  email: string;
+  churches: Array<string>;
 };
 
 type ChurchDocument = {
@@ -201,6 +209,7 @@ class Database {
       userName,
       email,
       _id: userSub,
+      churches: []
     };
     await this.connect();
     await this.users_collection.insertOne(user);
@@ -258,7 +267,11 @@ class Database {
     await this.prayee_collection.deleteOne({ userSub, requestId });
   }
 
-  public async getPrayerList(userSub: string, limit: number, offset: number): Promise<Array<RequestView>> {
+  public async getPrayerList(
+    userSub: string,
+    limit: number,
+    offset: number
+  ): Promise<Array<RequestView>> {
     await this.connect();
     return (await this.prayee_collection
       .aggregate([
