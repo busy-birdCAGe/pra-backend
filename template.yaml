@@ -14,6 +14,7 @@ Resources:
   AuthService:
     Type: AWS::Serverless::Function
     Properties:
+      Role: !GetAtt PRAServiceRole.Arn
       CodeUri: .
       Handler: dist/src/services/auth/app.handler
       Runtime: nodejs16.x
@@ -44,6 +45,7 @@ Resources:
   RequestsService:
     Type: AWS::Serverless::Function
     Properties:
+      Role: !GetAtt PRAServiceRole.Arn
       CodeUri: .
       Handler: dist/src/services/requests/app.handler
       Runtime: nodejs16.x
@@ -66,6 +68,28 @@ Resources:
               Authorizer: CognitoAuthorizer
       MemorySize: 128
       Timeout: 60
+
+  PRAServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${env}-PRAServiceRole"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: PRAServiceRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource: '*'
 
   HttpApi:
     Type: AWS::Serverless::HttpApi
