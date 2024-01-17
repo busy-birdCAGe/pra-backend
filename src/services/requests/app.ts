@@ -58,6 +58,8 @@ app.get("/requests", async (req: Request, res: Response) => {
 
 const handler = serverlessHttp(app);
 
-export { handler };
+module.exports.handler = async (event: any, context: any) => {
+  return await handler(event, context);
+};
 
 export { app as requestsApp };
