@@ -14,8 +14,8 @@ Resources:
   AuthService:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: .
-      Handler: dist/src/services/auth/app.handler
+      CodeUri: dist
+      Handler: src/services/auth/app.handler
       Runtime: nodejs16.x
       Events:
         Authorized:
@@ -52,8 +52,8 @@ Resources:
   RequestsService:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: .
-      Handler: dist/src/services/requests/app.handler
+      CodeUri: dist
+      Handler: src/services/requests/app.handler
       Runtime: nodejs16.x
       Events:
         CreateRequest:

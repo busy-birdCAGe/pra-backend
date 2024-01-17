@@ -23,6 +23,7 @@ app.post("/signup", async (req: Request, res: Response) => {
     await signUp(userName, email, password);
     res.send(successMessages.general);
   } catch (error: any) {
+    console.error(error.stack);
     res.status(500).send(error.message);
   }
 });
@@ -33,6 +34,7 @@ app.post("/signin", async (req: Request, res: Response) => {
     let tokens = await signIn(userName, email, password);
     res.send(tokens);
   } catch (error: any) {
+    console.error(error.stack)
     res.status(500).send(error.message);
   }
 });
@@ -41,10 +43,6 @@ app.get("/authorized", async (req: Request, res: Response) => {
   res.send("ok");
 });
 
-const handler = serverlessHttp(app);
-
-module.exports.handler = async (event: any, context: any) => {
-  return await handler(event, context);
-};
+export const handler = serverlessHttp(app);
 
 export { app as authApp };

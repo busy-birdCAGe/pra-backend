@@ -19,6 +19,6 @@
   },
   "scripts": {
     "dev": "npx tsc && node dist/local.js",
-    "deploy": "npx tsc && sam build --template-file \"template.yaml\" --manifest package.json && sam deploy --template-file \"template.yaml\" --stack-name \"dev-prayer-request-app\" --parameter-overrides \"env=dev\" --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3 --region \"us-east-1\" --capabilities \"CAPABILITY_IAM\" \"CAPABILITY_NAMED_IAM\""
+    "deploy": "npx tsc && sam build --template-file \"template.yaml\" --manifest package.json && sam deploy --stack-name \"dev-prayer-request-app\" --parameter-overrides \"env=dev\" --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3 --region \"us-east-1\" --capabilities \"CAPABILITY_IAM\" \"CAPABILITY_NAMED_IAM\""
   }
 }
